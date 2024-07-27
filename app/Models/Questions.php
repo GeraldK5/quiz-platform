@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Questions extends Model
 {
+    use HasFactory;
     protected $table = 'questions'; // Specify your table name if different from 'challenges'
     public $timestamps = false;
     protected $fillable = [
-        'question_text', 'marks', 'challenge_id'
+        'question_text', 'marks', 'challengeNumber'
     ];
 }

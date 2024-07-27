@@ -55,7 +55,7 @@
                     <tr>
                         <th>Rank</th>
                         <th>School Name</th>
-                        <th>Average Marks</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -63,7 +63,7 @@
                         <tr>
                             <td>{{ $school['rank'] }}</td>
                             <td>{{ $school['school_name'] }}</td>
-                            <td>{{ $school['average_marks'] }}</td>
+                            
                         </tr>
                     @endforeach
                 </tbody>

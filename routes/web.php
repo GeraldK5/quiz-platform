@@ -85,3 +85,5 @@ Route::get('/analytics', [AdminController::class, 'showMostCorrectlyAnsweredQues
 
 // In routes/web.php
 Route::get('/participant/{studentNumber}/questions/', [AdminController::class, 'showrepetition']);
+
+Route::get('/challenge/{id}/questions', [AdminController::class, 'showQuestions'])->name('challenge.questions');

@@ -53,8 +53,7 @@
     @php
         use Carbon\Carbon;
     @endphp
-    <div class="container-fluid page-body-wrapper">
-        <div class="container" style="color: black; padding-top: 50px;" align="center">
+ u
             <div class="container mt-5">
                 @if (session('error'))
                     <div class="alert alert-danger">
@@ -89,7 +88,7 @@
                             </thead>
 
                             @foreach ($challenges as $challenge)
-                                <tr data-challenge-id="{{ $challenge->id }}" class="challenge">
+                                <tr data-challenge-id="{{ $challenge->challengeNumber }}" class="challenge">
                                     <td>{{ $challenge->challengeNumber }}</td>
                                     <td>{{ $challenge->start_date }}</td>
                                     <td>{{ $challenge->end_date }}</td>

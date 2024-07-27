@@ -8,11 +8,14 @@ use App\Imports\QuestionsImport;
 use App\Imports\AnswersImport;
 use App\Models\Question;
 use App\Models\Answer;
+use App\Models\Answers;
 use App\Models\Challenge;
+use App\Models\Questions;
+use Illuminate\Support\Facades\Log;
 
 class UploadController extends Controller
 {
-    
+
     protected $adminController;
 
     public function __construct(AdminController $adminController)
@@ -63,18 +66,20 @@ class UploadController extends Controller
             $questionsData = $questionsImport->data;
             $answersData = $answersImport->data;
 
+
             foreach ($questionsData as $questionRow) {
-                $question = new Question;
+                $question = new Questions;
                 $question->question_text = $questionRow['question']; // Adjust according to your column names
                 $question->marks = $questionRow['marks']; // Adjust according to your column names
-                $question->challenge_id = $challengeId;
+                $question->challengeNumber = $request->challengeNumber;
                 $question->save();
+                Log::info($questionRow);
 
                 // Find corresponding answer from answers data
                 $answerText = $this->findAnswerByQuestionNumber($questionRow['number'], $answersData);
 
                 if ($answerText !== null) {
-                    $answer = new Answer;
+                    $answer = new Answers;
                     $answer->question_id = $question->id;
                     $answer->answer_text = $answerText; // Adjust according to your column names
                     $answer->save();
@@ -102,6 +107,7 @@ class UploadController extends Controller
         foreach ($answersData as $answerRow) {
 
             if ($answerRow['question_number'] == $questionNumber) {
+                Log::info($answerRow['answer']);
                 return $answerRow['answer']; // Adjust according to your column names
             }
         }

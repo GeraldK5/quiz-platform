@@ -43,13 +43,13 @@ class AdminController extends Controller
     public function addview()
     {
         $schools = School::all();
-        
+
         return view('admin.add_schools', ['schools' => $schools]);
     }
 
     public function uploadschool()
     {
-        
+
         return view('admin.addschool');
     }
     public function addschools(Request $request)
@@ -205,12 +205,14 @@ class AdminController extends Controller
             $questionsData = $questionsImport->data;
             $answersData = $answersImport->data;
 
+
             foreach ($questionsData as $questionRow) {
                 $question = new Questions;
-                $question->question_text = $questionRow['question']; // Adjust according to your column names
-                $question->marks = $questionRow['marks']; // Adjust according to your column names
+                $question->question_text = $questionRow['question'];
+                $question->marks = $questionRow['marks']; 
                 $question->challengeNumber = $request->challengeNumber;
                 $question->save();
+
 
                 // Find corresponding answer from answers data
                 $answerText = $this->findAnswerByQuestionNumber($questionRow['number'], $answersData);
@@ -447,5 +449,33 @@ class AdminController extends Controller
             $repetitionData = [];
             return view('admin.repetition', ['repetitionData' => $repetitionData]);
         }
+    }
+    public function showQuestions($id)
+    {
+        // Get the challenge based on the provided id
+        $challenge = Challenge::findOrFail($id);
+
+        // Get questions for the challenge
+        $questions = Questions::where('challenge_id', $id)->get();
+
+        // Prepare an array to store questions and their answers
+        $questionsWithAnswers = [];
+
+        foreach ($questions as $question) {
+            // Find corresponding answer for each question
+            $answer = Answers::where('question_id', $question->id)->first();
+
+            // Push question and answer to the array
+            $questionsWithAnswers[] = [
+                'question' => $question->question_text,
+                'answer' => $answer ? $answer->answer_text : 'No answer found',
+            ];
+        }
+
+        // Pass data to the view
+        return view('admin.questions', [
+            'challenge' => $challenge,
+            'questionsWithAnswers' => $questionsWithAnswers,
+        ]);
     }
 }

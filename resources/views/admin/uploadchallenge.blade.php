@@ -53,22 +53,9 @@
     @include('admin.arrange')
     @include('admin.sidebar')
     @include('admin.navbar')
-    <div class="container mt-5">
-        @if (session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        <div class="d-flex justify-content-center align-items-center">
-            <form method="POST" action="{{ route('uploadchallenge') }}" enctype="multipart/form-data"
-                class="p-4 border rounded" style="width: 100%; max-width: 80%;">
-                @csrf
-
-                {{-- Display validation errors --}}
+    <div class="container-fluid page-body-wrapper">
+        <div class="container" style="color: black; padding-top: 50px;" align="center">
+            <div class="container mt-5">
                 @if (session('error'))
                     <div class="alert alert-danger">
                         {{ session('error') }}
@@ -78,61 +65,79 @@
                 @if (session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="challengeNumber" class="form-label">Challenge Number</label>
-                        <input type="text" class="form-control" id="challengeNumber" name="challengeNumber"
-                            placeholder="Enter challenge" value="{{ old('challengeNumber') }}">
-                    </div>
-                    <div class="col">
-                        <label for="questionsPerAttempt" class="form-label">Number of Questions per attempt</label>
-                        <input type="text" class="form-control" id="questionsPerAttempt" name="questionsPerAttempt"
-                            placeholder="Enter number of questions per attempt"
-                            value="{{ old('questionsPerAttempt') }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="startDate" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="startDate" name="startDate"
-                            value="{{ old('startDate') }}">
-                    </div>
-                    <div class="col">
-                        <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" name="endDate"
-                            value="{{ old('endDate') }}">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="file" class="form-label">Choose Questions File (.xlsx, .xls)</label>
-                        <input type="file" class="form-control" id="file" name="questionsFile"
-                            accept=".xlsx, .xls" required onchange="handleFileSelect(event)">
-                        <select class="form-control mt-3" id="questionsDropdown" name="questionsDropdown"
-                            style="display: none;">
-                        </select>
-                    </div>
-                    <div class="col">
-                        <label for="answersFile" class="form-label">Choose Answers File (.xlsx, .xls)</label>
-                        <input type="file" class="form-control" id="answersFile" name="answersFile"
-                            accept=".xlsx, .xls" required onchange="handleAnswersFileSelect(event)">
-                        <select class="form-control mt-3" id="answersDropdown" name="answersDropdown"
-                            style="display: none;">
-                        </select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col">
-                        <label for="duration" class="form-label">Duration</label>
-                        <input type="number" class="form-control" id="duration" name="duration"
-                            placeholder="Enter duration in minutes" value="{{ old('duration') }}">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <div class="d-flex justify-content-center align-items-center">
+                    <form method="POST" action="{{ route('uploadchallenge') }}" enctype="multipart/form-data"
+                        class="p-4 border rounded" style="width: 100%; max-width: 80%;">
+                        @csrf
 
-            </form>
+                        {{-- Display validation errors --}}
+                        @if (session('error'))
+                            <div class="alert alert-danger">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
+                        @if (session('success'))
+                            <div class="alert alert-success">{{ session('success') }}</div>
+                        @endif
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="challengeNumber" class="form-label">Challenge Number</label>
+                                <input type="text" class="form-control" id="challengeNumber" name="challengeNumber"
+                                    placeholder="Enter challenge" value="{{ old('challengeNumber') }}">
+                            </div>
+                            <div class="col">
+                                <label for="questionsPerAttempt" class="form-label">Number of Questions per
+                                    attempt</label>
+                                <input type="text" class="form-control" id="questionsPerAttempt"
+                                    name="questionsPerAttempt" placeholder="Enter number of questions per attempt"
+                                    value="{{ old('questionsPerAttempt') }}">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" name="startDate"
+                                    value="{{ old('startDate') }}">
+                            </div>
+                            <div class="col">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" name="endDate"
+                                    value="{{ old('endDate') }}">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="file" class="form-label">Choose Questions File (.xlsx, .xls)</label>
+                                <input type="file" class="form-control" id="file" name="questionsFile"
+                                    accept=".xlsx, .xls" required onchange="handleFileSelect(event)">
+                                <select class="form-control mt-3" id="questionsDropdown" name="questionsDropdown"
+                                    style="display: none;">
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="answersFile" class="form-label">Choose Answers File (.xlsx, .xls)</label>
+                                <input type="file" class="form-control" id="answersFile" name="answersFile"
+                                    accept=".xlsx, .xls" required onchange="handleAnswersFileSelect(event)">
+                                <select class="form-control mt-3" id="answersDropdown" name="answersDropdown"
+                                    style="display: none;">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="duration" class="form-label">Duration</label>
+                                <input type="number" class="form-control" id="duration" name="duration"
+                                    placeholder="Enter duration in minutes" value="{{ old('duration') }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+
+                    </form>
+                </div>
+
+            </div>
         </div>
-
     </div>
 
 
