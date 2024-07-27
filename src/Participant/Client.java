@@ -20,7 +20,10 @@ public class Client {
             out = new PrintWriter(soc.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
             scanner = new Scanner(System.in);
-
+            
+         
+            
+         
             System.out.println("Are you already registered? (yes/no): ");
             String response = scanner.nextLine().trim().toLowerCase();
 
@@ -28,11 +31,43 @@ public class Client {
                 // Handle login process
                 if (handleLogin(scanner, out, in)) {
                     // Successfully logged in
-                    System.out.println("Enter 'view challenge' to see available challenges or 'logout' to exit.");
+                    System.out.println("Enter 'view challenge' to see available challenges or'attepmtChallenge ChallengeNumber' to attemptChallenge to answer a particular challenge  and'logout' to exit.");
                     while (true) {
                         String command = scanner.nextLine().trim().toLowerCase();
                         if (command.equals("view challenge")) {
-                            challengeFunctions.ViewChallenges(scanner);
+                            out.println(command);
+                            String serverResponse;
+                            while ((serverResponse = in.readLine()) != null) {
+                                if (serverResponse.isEmpty()) {
+                                    break;
+                                }
+                                System.out.println(serverResponse);
+                            }
+                        } else if (command.startsWith("attemptchallenge")) {
+                            out.println(command);
+                            String serverResponse;
+                            while (true) {
+                                serverResponse = in.readLine();
+
+                                // Check if the challenge is completed
+                                if (serverResponse.equals("Challenge completed!")) {
+                                    System.out.println(serverResponse);
+                                    break;
+                                }
+
+                                // Print other responses (question details, etc.)
+                                System.out.println(serverResponse);
+                                if (serverResponse.startsWith("Enter answer: ")) {
+                                    // answer is entered here
+                                    String answer = scanner.nextLine();  // Read user input
+                                    out.println(answer);     // Send user input to server
+                                }
+                            }
+
+                            // Print final responses after challenge completion
+                            while ((serverResponse = in.readLine()) != null && !serverResponse.isEmpty()) {
+                                System.out.println(serverResponse);
+                            }
                         } else if (command.equals("logout")) {
                             System.out.println("Logging out...");
                             break;
@@ -49,6 +84,7 @@ public class Client {
                 closeResources(out, in, scanner, soc, fis);
                 return;
             }
+        
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,7 +95,7 @@ public class Client {
 
     private static boolean handleLogin(Scanner scanner, PrintWriter out, BufferedReader in) throws IOException {
         System.out.println("Enter login command: ");
-        System.out.println("username student_number");
+        System.out.println("username password");
 
         String loginCommand = scanner.nextLine().trim();
         out.println("login " + loginCommand); // Send login command to the server
@@ -70,7 +106,8 @@ public class Client {
         return serverResponse.equalsIgnoreCase("login successful");
     }
 
-    private static void handleRegistration(Scanner scanner, PrintWriter out, BufferedReader in, Socket soc) throws IOException {
+    private static void handleRegistration(Scanner scanner, PrintWriter out, BufferedReader in, Socket soc)
+            throws IOException {
         FileInputStream fis = null;
         try {
             System.out.println("Enter registration command: ");
@@ -113,20 +150,27 @@ public class Client {
             System.out.println("Server response for registration: " + serverResponse);
 
         } finally {
-            if (fis != null) fis.close();
+            if (fis != null)
+                fis.close();
         }
+
     }
 
-    private static void closeResources(PrintWriter out, BufferedReader in, Scanner scanner, Socket soc, FileInputStream fis) {
+    private static void closeResources(PrintWriter out, BufferedReader in, Scanner scanner, Socket soc,
+            FileInputStream fis) {
         try {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (scanner != null) scanner.close();
-            if (fis != null) fis.close();
-            if (soc != null) soc.close();
+            if (out != null)
+                out.close();
+            if (in != null)
+                in.close();
+            if (scanner != null)
+                scanner.close();
+            if (fis != null)
+                fis.close();
+            if (soc != null)
+                soc.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 }
-

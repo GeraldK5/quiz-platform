@@ -8,13 +8,13 @@ import java.sql.SQLException;
 import DatabaseConnection.DatabaseConnection;
 
 public class Authentication {
-    public static String validateUser(String name, String reg_number) {
-        String VALIDATE_USER_SQL = "SELECT * FROM schools WHERE registration_number = ? AND representative_name = ?";
+    public static String validateUser(String reg_number, String password) {
+        String VALIDATE_USER_SQL = "SELECT * FROM schools WHERE registration_number = ? AND password = ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(VALIDATE_USER_SQL)) {
             preparedStatement.setString(1, reg_number);
-            preparedStatement.setString(2, name);
+            preparedStatement.setString(2, password);
 
             ResultSet resultSet = preparedStatement.executeQuery();
             String school_id = "";

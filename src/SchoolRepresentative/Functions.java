@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,54 +12,58 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.security.SecureRandom;
 
 import DatabaseConnection.DatabaseConnection;
 
 public class Functions {
 
-    public static void DisplayOptions(String school_id) throws SQLException, InterruptedException, IOException {
-        try (Scanner scanner = new Scanner(System.in)) {
-            int option = 0; // Initialize option outside the loop
+    public static void DisplayOptions(String school_id, Scanner scanner)
+            throws SQLException, InterruptedException, IOException {
 
-            while (true) {
-                // Display menu options
-                System.out.println("VIEW PARTICIPANTS MENU");
-                System.out.println(
-                        "1. Display all confirmed participants\n2. Display pending participants\n3. Display rejected participants");
-                System.out.print("Enter display option: ");
+        String command = "";
 
-                // Read and handle input
-                try {
-                    option = Integer.parseInt(scanner.nextLine().trim()); // Read input as String and convert to int
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid input. Please enter a number.");
-                    continue; // Restart loop if input is invalid
-                }
+        while (true) {
+            // Display menu options
+            System.out.println("VIEW PARTICIPANTS MENU");
+            System.out.println(
+                    "Enter 'pending' to display pending participants, 'viewparticipants' to display all participants, and 'rejected' to display rejected participants");
+            System.out.println("Enter 'logout' to log out.");
+            // Read and handle input
+            try {
+                command = scanner.nextLine().trim().toLowerCase(); // Read input as String and convert to int
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                continue; // Restart loop if input is invalid
+            }
 
-                switch (option) {
-                    case 1:
-                        DisplayAllParticipants(school_id);
-                        break;
-                    case 2:
-                        DisplayPendingParticipants(school_id, scanner);
-                        break;
-                    case 3:
-                        DisplayRejectedParticipants(school_id);
-                        break;
-                    default:
-                        System.out.println("Invalid option. Please choose again. Try again");
-                        break;
-                }
+            switch (command) {
+                case "viewparticipants":
+                    DisplayAllParticipants(school_id);
+                    break;
+                case "pending":
+                    DisplayPendingParticipants(school_id, scanner);
+                    break;
+                case "rejected":
+                    DisplayRejectedParticipants(school_id);
+                    break;
+                case "logout": // Handle logout
+                    System.out.println("Logging out...");
+                    return;
+                default:
+                    System.out.println("Invalid command. Please enter a valid command.");
+                    break;
             }
         }
+
     }
 
     public static void DisplayAllParticipants(String school_id) throws SQLException, InterruptedException, IOException {
-        String getParticipants = "SELECT * FROM participants WHERE studentNumber = ?";
+        String getParticipants = "SELECT * FROM participants WHERE studentNumber LIKE ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(getParticipants)) {
-            preparedStatement.setString(1, school_id);
+            preparedStatement.setString(1, school_id + "/%");
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (!resultSet.isBeforeFirst()) { // Check if there are any rows at all
@@ -71,7 +76,7 @@ public class Functions {
                     String firstname = resultSet.getString("firstname");
                     String lastname = resultSet.getString("lastname");
                     String email = resultSet.getString("email");
-                    System.out.println(id + " - " + firstname + " " + lastname + " - " + email + " - ");
+                    System.out.println(id + " - " + firstname + " " + lastname + " - " + email);
                 }
             }
 
@@ -92,8 +97,9 @@ public class Functions {
             for (String line : lines) {
                 // Split the line by comma
                 String[] parts = line.split(",");
+                String studentNumber = parts[5].trim().split("/")[0];
                 if (parts.length == 7) {
-                    if (school_id.equals(parts[5].trim())) {
+                    if (school_id.equals(studentNumber)) {
                         record = true;
 
                         // Assign each part to a variable
@@ -141,15 +147,18 @@ public class Functions {
                                 String dateOfBirth = parts[4].trim();
                                 String schoolRegistrationNumber = parts[5].trim();
                                 String imageFile = parts[6].trim();
+                                String password = generatePassword();
                                 boolean insert = InsertParticipant(participantusername, firstname, lastname,
-                                        emailAddress,
+                                        emailAddress, password,
                                         dateOfBirth,
                                         schoolRegistrationNumber, imageFile, true);
                                 if (insert) {
                                     deleteLineByUsername("src/Participants.txt", username);
                                 }
+                                System.out.println("-----------------Sending Email-----------------");
                                 Mailer.send(emailAddress,
-                                        "You have been accepted and activated by your school representative");
+                                        "You have been accepted and activated by your school representative\nYour password is :"
+                                                + password);
 
                                 break;
 
@@ -181,7 +190,7 @@ public class Functions {
                                 String schoolRegistrationNumber = parts[5].trim();
                                 String imageFile = parts[6].trim();
                                 boolean delete = InsertParticipant(participantusername, firstname, lastname,
-                                        emailAddress,
+                                        emailAddress, generatePassword(),
                                         dateOfBirth,
                                         schoolRegistrationNumber, imageFile, false);
                                 if (delete) {
@@ -216,13 +225,14 @@ public class Functions {
     }
 
     public static boolean InsertParticipant(String username, String firstname, String lastname, String email,
+            String password,
             String dateOfBirth, String school_id, String imageFile, Boolean option) throws SQLException {
 
         String insertParticipant = "";
         if (option) {
-            insertParticipant = "INSERT INTO participants (firstname, lastname, email, date_of_birth, image_path,username, studentNumber) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            insertParticipant = "INSERT INTO participants (firstname, lastname, email,password, date_of_birth, image_path,username, studentNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         } else {
-            insertParticipant = "INSERT INTO rejected (firstname, lastname, email, date_of_birth, image_path,username, studentNumber) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            insertParticipant = "INSERT INTO rejected (firstname, lastname, email,password, date_of_birth, image_path,username, studentNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         }
 
         try (Connection connection = DatabaseConnection.getConnection();
@@ -231,11 +241,12 @@ public class Functions {
             preparedStatement.setString(1, firstname);
             preparedStatement.setString(2, lastname);
             preparedStatement.setString(3, email);
-            preparedStatement.setString(4, dateOfBirth);
-            preparedStatement.setString(5, imageFile);
-            preparedStatement.setString(6, username);
+            preparedStatement.setString(4, password);
+            preparedStatement.setString(5, dateOfBirth);
+            preparedStatement.setString(6, imageFile);
+            preparedStatement.setString(7, username);
 
-            preparedStatement.setString(7, school_id);
+            preparedStatement.setString(8, school_id);
 
             int rowsAffected = preparedStatement.executeUpdate();
 
@@ -259,11 +270,11 @@ public class Functions {
 
     public static void DisplayRejectedParticipants(String school_id)
             throws SQLException, InterruptedException, IOException {
-        String getParticipants = "SELECT * FROM rejected WHERE studentNumber = ?";
+        String getParticipants = "SELECT * FROM rejected WHERE studentNumber LIKE ?";
 
         try (Connection connection = DatabaseConnection.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(getParticipants)) {
-            preparedStatement.setString(1, school_id);
+            preparedStatement.setString(1, school_id + "/%");
             ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.isBeforeFirst()) { // Check if there are any rows at all
                 System.out.println("No rejected participants found.");
@@ -323,5 +334,25 @@ public class Functions {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String generatePassword() {
+        final String UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        final String LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
+        final String DIGITS = "0123456789";
+        final String SPECIAL_CHARACTERS = "!@#$%^&*()-_+=<>?";
+
+        final String ALL_CHARACTERS = UPPERCASE + LOWERCASE + DIGITS + SPECIAL_CHARACTERS;
+        final SecureRandom RANDOM = new SecureRandom();
+        int length = 5; // specify the desired password length
+
+        StringBuilder password = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            int index = RANDOM.nextInt(ALL_CHARACTERS.length());
+            password.append(ALL_CHARACTERS.charAt(index));
+        }
+
+        return password.toString();
     }
 }

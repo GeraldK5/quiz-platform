@@ -12,27 +12,23 @@ public class SchoolRep {
         while (true) {
             System.out.println("LOGIN MENU");
 
-            System.out.print("Enter name: ");
-            String name = scanner.nextLine();
-
-            System.out.print("Enter school registration number: ");
+            System.out.print("Enter registration number: ");
             String reg_no = scanner.nextLine();
 
-            String isValidUser = Authentication.validateUser(name, reg_no);
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine();
+
+            String isValidUser = Authentication.validateUser(reg_no, password);
 
             if (!isValidUser.isEmpty() && !isValidUser.equals("connectionfailed")) {
                 System.out.println("********Login successful*******");
-                Functions.DisplayOptions(isValidUser);
+                Functions.DisplayOptions(isValidUser, scanner);
 
             } else if (isValidUser.isEmpty()) {
                 System.out.println("**********Invalid username or password*********");
             } else if (isValidUser.equals("connectionfailed")) {
                 System.out.println("**********Exception caught, Failed to make a connection*********");
-
             }
-
         }
-
     }
-
 }
